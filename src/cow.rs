@@ -22,7 +22,10 @@ use serde::{
     de::{Error, Visitor},
 };
 
-use crate::empty::{Empty, check_str};
+use crate::{
+    empty::{Empty, check_str},
+    str::Str,
+};
 
 /// Represents non-empty clone-on-write strings.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -165,6 +168,12 @@ impl<'s> CowStr<'s> {
         self.assert_non_empty();
 
         self.value
+    }
+
+    /// Constructs [`Self`] from [`Str`].
+    pub const fn from_str(string: Str<'s>) -> Self {
+        // SAFETY: the contained string is non-empty
+        unsafe { Self::borrowed_unchecked(string.take()) }
     }
 }
 
