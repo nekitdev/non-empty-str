@@ -7,9 +7,12 @@ use miette::Diagnostic;
 
 use thiserror::Error;
 
+/// The message for errors returned on empty strings.
+pub const EMPTY: &str = "the string is empty";
+
 /// Represents errors that occur when the input string is empty.
 #[derive(Debug, Error)]
-#[error("received an empty string")]
+#[error("the string is empty")]
 #[cfg_attr(
     feature = "diagnostics",
     derive(Diagnostic),

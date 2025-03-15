@@ -43,10 +43,10 @@ impl fmt::Display for Str<'_> {
     }
 }
 
-impl<'t> TryFrom<&'t str> for Str<'t> {
+impl<'s> TryFrom<&'s str> for Str<'s> {
     type Error = Empty;
 
-    fn try_from(value: &'t str) -> Result<Self, Self::Error> {
+    fn try_from(value: &'s str) -> Result<Self, Self::Error> {
         Self::new(value)
     }
 }

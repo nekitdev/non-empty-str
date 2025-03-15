@@ -13,6 +13,9 @@ pub mod cow;
 pub mod empty;
 pub mod str;
 
+#[macro_use]
+pub mod macros;
+
 #[cfg(any(feature = "alloc", feature = "std"))]
 pub use cow::CowStr;
 
