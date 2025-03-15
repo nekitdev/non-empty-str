@@ -2,6 +2,42 @@
 
 <!-- changelogging: start -->
 
+## [0.2.1](https://github.com/nekitdev/non-empty-str/tree/v0.2.1) (2025-03-15)
+
+### Changes
+
+- There are now two implementations of `Deserialize` for `CowStr`, as follows:
+
+  - disabled `borrow` feature (default): `CowStr` allocates new strings;
+  - enabled `borrow` feature: `CowStr` borrows from the input.
+
+  The `borrow` feature is disabled by default because enabling it requires
+  `#[serde(borrow)]` attributes to be applied to all `CowStr` fields:
+
+  ```rust
+  use serde::{Deserialize, Serialize};
+
+  #[derive(Debug, Deserialize, Serialize)]
+  pub struct Type<'t> {
+      #[serde(borrow)]
+      pub name: CowStr<'t>,
+      #[serde(borrow)]
+      pub description: CowStr<'t>,
+  }
+  ```
+
+  With `borrow` disabled (again, by default), one does not need any additional attributes:
+
+  ```rust
+  use serde::{Deserialize, Serialize};
+
+  #[derive(Debug, Deserialize, Serialize)]
+  pub struct Type<'t> {
+      pub name: CowStr<'t>,
+      pub description: CowStr<'t>,
+  }
+  ```
+
 ## [0.2.0](https://github.com/nekitdev/non-empty-str/tree/v0.2.0) (2025-03-15)
 
 ### Features
