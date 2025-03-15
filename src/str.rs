@@ -29,7 +29,7 @@ impl Serialize for Str<'_> {
 type Value<'s> = &'s str;
 
 #[cfg(feature = "serde")]
-impl<'de> Deserialize<'de> for Str<'de> {
+impl<'de: 's, 's> Deserialize<'de> for Str<'s> {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         let value = Value::deserialize(deserializer)?;
 

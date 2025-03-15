@@ -1,4 +1,6 @@
 //! Non-empty [`Cow<'_, str>`].
+//!
+//! [`Cow<'_, str>`]: Cow
 
 #[cfg(feature = "unsafe-assert")]
 use core::hint::assert_unchecked;
@@ -11,16 +13,21 @@ use std::borrow::Cow;
 #[cfg(all(not(feature = "std"), feature = "alloc"))]
 use alloc::{borrow::Cow, string::String};
 
-#[cfg(all(not(feature = "std"), feature = "alloc", feature = "serde"))]
+#[cfg(all(
+    not(feature = "std"),
+    feature = "alloc",
+    feature = "serde",
+    feature = "borrow"
+))]
 use alloc::borrow::ToOwned;
 
 use const_macros::{const_none, const_ok, const_try};
 
 #[cfg(feature = "serde")]
-use serde::{
-    Deserialize, Deserializer, Serialize, Serializer,
-    de::{Error, Visitor},
-};
+use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Error};
+
+#[cfg(all(feature = "serde", feature = "borrow"))]
+use serde::de::Visitor;
 
 use crate::{
     empty::{Empty, check_str},
@@ -33,36 +40,6 @@ pub struct CowStr<'s> {
     value: Cow<'s, str>,
 }
 
-impl fmt::Display for CowStr<'_> {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.get().fmt(formatter)
-    }
-}
-
-#[cfg(feature = "serde")]
-struct CowStrVisitor;
-
-#[cfg(feature = "serde")]
-impl<'de> Visitor<'de> for CowStrVisitor {
-    type Value = CowStr<'de>;
-
-    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter.write_str("non-empty string")
-    }
-
-    fn visit_borrowed_str<E: Error>(self, string: &'de str) -> Result<Self::Value, E> {
-        Self::Value::borrowed(string).map_err(E::custom)
-    }
-
-    fn visit_str<E: Error>(self, string: &str) -> Result<Self::Value, E> {
-        self.visit_string(string.to_owned())
-    }
-
-    fn visit_string<E: Error>(self, string: String) -> Result<Self::Value, E> {
-        Self::Value::owned(string).map_err(E::custom)
-    }
-}
-
 #[cfg(feature = "serde")]
 impl Serialize for CowStr<'_> {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
@@ -70,10 +47,49 @@ impl Serialize for CowStr<'_> {
     }
 }
 
-#[cfg(feature = "serde")]
-impl<'de> Deserialize<'de> for CowStr<'de> {
+#[cfg(all(feature = "serde", feature = "borrow"))]
+struct CowStrVisitor;
+
+#[cfg(all(feature = "serde", feature = "borrow"))]
+impl<'de> Visitor<'de> for CowStrVisitor {
+    type Value = CowStr<'de>;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str("non-empty string")
+    }
+
+    fn visit_borrowed_str<E: Error>(self, value: &'de str) -> Result<Self::Value, E> {
+        CowStr::borrowed(value).map_err(Error::custom)
+    }
+
+    fn visit_str<E: Error>(self, value: &str) -> Result<Self::Value, E> {
+        self.visit_string(value.to_owned())
+    }
+
+    fn visit_string<E: Error>(self, value: String) -> Result<Self::Value, E> {
+        CowStr::owned(value).map_err(Error::custom)
+    }
+}
+
+#[cfg(all(feature = "serde", feature = "borrow"))]
+impl<'de: 'c, 'c> Deserialize<'de> for CowStr<'c> {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        deserializer.deserialize_string(CowStrVisitor)
+        deserializer.deserialize_str(CowStrVisitor)
+    }
+}
+
+#[cfg(all(feature = "serde", not(feature = "borrow")))]
+impl<'de> Deserialize<'de> for CowStr<'_> {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let value = Cow::deserialize(deserializer)?;
+
+        Self::new(value).map_err(Error::custom)
+    }
+}
+
+impl fmt::Display for CowStr<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.get().fmt(formatter)
     }
 }
 

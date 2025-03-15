@@ -31,6 +31,7 @@ default-features = false
 default = ["std"]
 diagnostics = ["dep:miette", "std"]
 serde = ["dep:serde"]
+borrow = []
 unsafe-assert = []
 alloc = ["serde?/alloc"]
 std = ["serde?/std"]
