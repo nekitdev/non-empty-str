@@ -2,6 +2,18 @@
 
 <!-- changelogging: start -->
 
+## [0.2.2](https://github.com/nekitdev/non-empty-str/tree/v0.2.2) (2025-03-22)
+
+### Features
+
+- Added `into_static` for `CowStr` along with the following type aliases:
+
+  ```rust
+  pub type StaticCowStr = CowStr<'static>;
+
+  pub type StaticStr = Str<'static>;
+  ```
+
 ## [0.2.1](https://github.com/nekitdev/non-empty-str/tree/v0.2.1) (2025-03-15)
 
 ### Changes
