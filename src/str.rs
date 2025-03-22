@@ -113,6 +113,9 @@ impl<'s> Str<'s> {
     }
 }
 
+/// Type alias for [`Str`] with `'static` lifetime.
+pub type StaticStr = Str<'static>;
+
 impl Str<'_> {
     /// Returns the wrapped string reference.
     pub const fn get(&self) -> &str {

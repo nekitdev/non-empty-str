@@ -260,6 +260,9 @@ impl<'s> CowStr<'s> {
     }
 }
 
+/// Type alias for [`CowStr`] with `'static` lifetime.
+pub type StaticCowStr = CowStr<'static>;
+
 impl CowStr<'_> {
     /// Returns the wrapped string reference.
     pub fn get(&self) -> &str {
@@ -267,5 +270,11 @@ impl CowStr<'_> {
         self.assert_non_empty();
 
         self.value.as_ref()
+    }
+
+    /// Converts [`Self`] into [`StaticCowStr`].
+    pub fn into_static(self) -> StaticCowStr {
+        // SAFETY: the contained string is non-empty
+        unsafe { StaticCowStr::owned_unchecked(self.take().into_owned()) }
     }
 }
