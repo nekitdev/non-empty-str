@@ -2,6 +2,17 @@
 
 <!-- changelogging: start -->
 
+## [0.3.0](https://github.com/nekitdev/non-empty-str/tree/v0.3.0) (2025-03-25)
+
+### Changes
+
+- The `into_static` method on `CowStr<'_>` was moved to implementing `IntoStatic`,
+  gated behind the `into-static` feature.
+
+### Removals
+
+- Removed `StaticStr` and `StaticCowStr`.
+
 ## [0.2.2](https://github.com/nekitdev/non-empty-str/tree/v0.2.2) (2025-03-22)
 
 ### Features
