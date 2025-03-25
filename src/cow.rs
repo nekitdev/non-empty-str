@@ -23,6 +23,9 @@ use alloc::borrow::ToOwned;
 
 use const_macros::{const_none, const_ok, const_try};
 
+#[cfg(feature = "into-static")]
+use into_static::IntoStatic;
+
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Error};
 
@@ -260,9 +263,6 @@ impl<'s> CowStr<'s> {
     }
 }
 
-/// Type alias for [`CowStr`] with `'static` lifetime.
-pub type StaticCowStr = CowStr<'static>;
-
 impl CowStr<'_> {
     /// Returns the wrapped string reference.
     pub fn get(&self) -> &str {
@@ -271,10 +271,14 @@ impl CowStr<'_> {
 
         self.value.as_ref()
     }
+}
 
-    /// Converts [`Self`] into [`StaticCowStr`].
-    pub fn into_static(self) -> StaticCowStr {
+#[cfg(feature = "into-static")]
+impl IntoStatic for CowStr<'_> {
+    type Static = CowStr<'static>;
+
+    fn into_static(self) -> Self::Static {
         // SAFETY: the contained string is non-empty
-        unsafe { StaticCowStr::owned_unchecked(self.take().into_owned()) }
+        unsafe { Self::Static::new_unchecked(self.take().into_static()) }
     }
 }

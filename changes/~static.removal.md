@@ -1,0 +1,1 @@
+Removed `StaticStr` and `StaticCowStr`.

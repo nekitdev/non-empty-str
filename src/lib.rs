@@ -17,7 +17,7 @@ pub mod str;
 pub mod macros;
 
 #[cfg(any(feature = "alloc", feature = "std"))]
-pub use cow::{CowStr, StaticCowStr};
+pub use cow::CowStr;
 
 pub use empty::Empty;
-pub use str::{StaticStr, Str};
+pub use str::Str;
