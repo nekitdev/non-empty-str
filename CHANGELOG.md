@@ -2,6 +2,16 @@
 
 <!-- changelogging: start -->
 
+## [0.4.0](https://github.com/nekitdev/non-empty-str/tree/v0.4.0) (2025-03-27)
+
+### Features
+
+- Added `OwnedStr` that wraps `String`.
+
+### Removals
+
+- Removed `check_str` and `check` from the `empty` module.
+
 ## [0.3.0](https://github.com/nekitdev/non-empty-str/tree/v0.3.0) (2025-03-25)
 
 ### Changes
