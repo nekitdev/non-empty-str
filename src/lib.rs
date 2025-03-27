@@ -10,6 +10,9 @@ extern crate alloc;
 #[cfg(any(feature = "alloc", feature = "std"))]
 pub mod cow;
 
+#[cfg(any(feature = "alloc", feature = "std"))]
+pub mod owned;
+
 pub mod empty;
 pub mod str;
 
@@ -18,6 +21,9 @@ pub mod macros;
 
 #[cfg(any(feature = "alloc", feature = "std"))]
 pub use cow::CowStr;
+
+#[cfg(any(feature = "alloc", feature = "std"))]
+pub use owned::OwnedStr;
 
 pub use empty::Empty;
 pub use str::Str;

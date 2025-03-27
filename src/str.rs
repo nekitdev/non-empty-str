@@ -5,12 +5,12 @@ use core::hint::assert_unchecked;
 
 use core::{fmt, ops::Deref};
 
-use const_macros::{const_ok, const_try};
+use const_macros::{const_early, const_ok};
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Error};
 
-use crate::empty::{Empty, check_str};
+use crate::empty::Empty;
 
 /// Represents non-empty [`str`] values.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -78,8 +78,9 @@ impl<'s> Str<'s> {
     ///
     /// Returns [`Empty`] if the given string is empty.
     pub const fn new(value: &'s str) -> Result<Self, Empty> {
-        const_try!(check_str(value));
+        const_early!(value.is_empty() => Empty);
 
+        // SAFETY: the value is non-empty at this point
         Ok(unsafe { Self::new_unchecked(value) })
     }
 
@@ -101,7 +102,10 @@ impl<'s> Str<'s> {
 
     #[cfg(feature = "unsafe-assert")]
     const fn assert_non_empty(&self) {
-        unsafe { assert_unchecked(!self.value.is_empty()) }
+        // SAFETY: the value is non-empty by construction
+        unsafe {
+            assert_unchecked(!self.value.is_empty());
+        }
     }
 
     /// Consumes [`Self`], returning the wrapped string.

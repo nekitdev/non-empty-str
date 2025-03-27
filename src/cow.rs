@@ -2,6 +2,9 @@
 //!
 //! [`Cow<'_, str>`]: Cow
 
+#[cfg(not(any(feature = "std", feature = "alloc")))]
+compile_error!("expected either `std` or `alloc` to be enabled");
+
 #[cfg(feature = "unsafe-assert")]
 use core::hint::assert_unchecked;
 
@@ -21,7 +24,7 @@ use alloc::{borrow::Cow, string::String};
 ))]
 use alloc::borrow::ToOwned;
 
-use const_macros::{const_none, const_ok, const_try};
+use const_macros::{const_early, const_ok, const_quick};
 
 #[cfg(feature = "into-static")]
 use into_static::IntoStatic;
@@ -32,10 +35,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Error};
 #[cfg(all(feature = "serde", feature = "borrow"))]
 use serde::de::Visitor;
 
-use crate::{
-    empty::{Empty, check_str},
-    str::Str,
-};
+use crate::{empty::Empty, owned::OwnedStr, str::Str};
 
 /// Represents non-empty clone-on-write strings.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -140,6 +140,12 @@ impl<'s> From<Str<'s>> for CowStr<'s> {
     }
 }
 
+impl From<OwnedStr> for CowStr<'_> {
+    fn from(string: OwnedStr) -> Self {
+        Self::from_owned_str(string)
+    }
+}
+
 impl<'s> From<CowStr<'s>> for Cow<'s, str> {
     fn from(value: CowStr<'s>) -> Self {
         value.take()
@@ -153,8 +159,9 @@ impl<'s> CowStr<'s> {
     ///
     /// Returns [`Empty`] if the string is empty.
     pub fn new(value: Cow<'s, str>) -> Result<Self, Empty> {
-        const_try!(check_str(value.as_ref()));
+        const_early!(value.is_empty() => Empty);
 
+        // SAFETY: the value is non-empty at this point
         Ok(unsafe { Self::new_unchecked(value) })
     }
 
@@ -182,7 +189,7 @@ impl<'s> CowStr<'s> {
     ///
     /// [`new`]: Self::new
     pub const fn borrowed(value: &'s str) -> Result<Self, Empty> {
-        const_try!(check_str(value));
+        const_early!(value.is_empty() => Empty);
 
         // SAFETY: the value is non-empty at this point
         Ok(unsafe { Self::borrowed_unchecked(value) })
@@ -192,10 +199,9 @@ impl<'s> CowStr<'s> {
     ///
     /// [`borrowed`]: Self::borrowed
     pub const fn borrowed_ok(value: &'s str) -> Option<Self> {
-        // NOTE: we can not use `const_ok!(Self::borrowed(value))` currently
+        const_quick!(value.is_empty());
 
-        const_none!(const_ok!(check_str(value)));
-
+        // SAFETY: the value is non-empty at this point
         Some(unsafe { Self::borrowed_unchecked(value) })
     }
 
@@ -219,7 +225,7 @@ impl<'s> CowStr<'s> {
     ///
     /// [`new`]: Self::new
     pub fn owned(value: String) -> Result<Self, Empty> {
-        const_try!(check_str(value.as_str()));
+        const_early!(value.is_empty() => Empty);
 
         // SAFETY: the value is non-empty at this point
         Ok(unsafe { Self::owned_unchecked(value) })
@@ -240,12 +246,16 @@ impl<'s> CowStr<'s> {
     ///
     /// [`new_unchecked`]: Self::new_unchecked
     pub const unsafe fn owned_unchecked(value: String) -> Self {
+        // SAFETY: the caller must ensure that the value is non-empty
         unsafe { Self::new_unchecked(Cow::Owned(value)) }
     }
 
     #[cfg(feature = "unsafe-assert")]
     fn assert_non_empty(&self) {
-        unsafe { assert_unchecked(!self.value.is_empty()) }
+        // SAFETY: the value is non-empty by construction
+        unsafe {
+            assert_unchecked(!self.value.is_empty());
+        }
     }
 
     /// Consumes [`Self`] and returns the wrapped string.
@@ -260,6 +270,12 @@ impl<'s> CowStr<'s> {
     pub const fn from_str(string: Str<'s>) -> Self {
         // SAFETY: the contained string is non-empty
         unsafe { Self::borrowed_unchecked(string.take()) }
+    }
+
+    /// Constructs [`Self`] from [`OwnedStr`].
+    pub fn from_owned_str(string: OwnedStr) -> Self {
+        // SAFETY: the contained string is non-empty
+        unsafe { Self::owned_unchecked(string.take()) }
     }
 }
 

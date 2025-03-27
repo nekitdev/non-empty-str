@@ -12,7 +12,7 @@ keywords = ["non-empty", "string"]
 categories = ["no-std", "no-std::no-alloc", "rust-patterns"]
 
 [dependencies.const-macros]
-version = "0.2.0"
+version = "0.3.0"
 
 [dependencies.into-static]
 version = "0.1.0"
@@ -43,5 +43,5 @@ alloc = ["serde?/alloc", "into-static?/alloc"]
 std = ["serde?/std", "into-static?/std"]
 
 [package.metadata.docs.rs]
-features = ["serde"]
+features = ["serde", "into-static"]
 rustdoc-args = ["--cfg", "docsrs"]
