@@ -117,7 +117,8 @@ impl<'s> Str<'s> {
     }
 }
 
-/// Type alias for [`Str`] with `'static` lifetime.
+/// An alias for [`Str<'static>`](Str).
+#[cfg(feature = "static")]
 pub type StaticStr = Str<'static>;
 
 impl Str<'_> {

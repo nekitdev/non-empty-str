@@ -27,3 +27,9 @@ pub use owned::OwnedStr;
 
 pub use empty::Empty;
 pub use str::Str;
+
+#[cfg(feature = "static")]
+pub use str::StaticStr;
+
+#[cfg(all(any(feature = "alloc", feature = "std"), feature = "static"))]
+pub use cow::StaticCowStr;

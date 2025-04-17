@@ -1,6 +1,4 @@
-//! Non-empty [`Cow<'_, str>`].
-//!
-//! [`Cow<'_, str>`]: Cow
+//! Non-empty [`Cow<'_, str>`](Cow).
 
 #[cfg(not(any(feature = "std", feature = "alloc")))]
 compile_error!("expected either `std` or `alloc` to be enabled");
@@ -26,7 +24,7 @@ use alloc::borrow::ToOwned;
 
 use const_macros::{const_early, const_ok, const_quick};
 
-#[cfg(feature = "into-static")]
+#[cfg(feature = "static")]
 use into_static::IntoStatic;
 
 #[cfg(feature = "serde")]
@@ -289,9 +287,13 @@ impl CowStr<'_> {
     }
 }
 
-#[cfg(feature = "into-static")]
+/// An alias for [`CowStr<'static>`](CowStr).
+#[cfg(feature = "static")]
+pub type StaticCowStr = CowStr<'static>;
+
+#[cfg(feature = "static")]
 impl IntoStatic for CowStr<'_> {
-    type Static = CowStr<'static>;
+    type Static = StaticCowStr;
 
     fn into_static(self) -> Self::Static {
         // SAFETY: the contained string is non-empty

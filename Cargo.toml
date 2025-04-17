@@ -35,7 +35,7 @@ default-features = false
 [features]
 default = ["std"]
 diagnostics = ["dep:miette", "std"]
-into-static = ["dep:into-static"]
+static = ["dep:into-static"]
 serde = ["dep:serde"]
 borrow = []
 unsafe-assert = []
