@@ -2,6 +2,16 @@
 
 <!-- changelogging: start -->
 
+## [0.6.0](https://github.com/nekitdev/non-empty-str/tree/v0.6.0) (2025-04-17)
+
+### Features
+
+- Enabling `static` feature exports `StaticStr` and `StaticCowStr` starting from this version.
+
+### Changes
+
+- Changed `into-static` feature to `static`.
+
 ## [0.5.0](https://github.com/nekitdev/non-empty-str/tree/v0.5.0) (2025-03-31)
 
 No significant changes.
