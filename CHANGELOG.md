@@ -2,6 +2,10 @@
 
 <!-- changelogging: start -->
 
+## [0.7.1](https://github.com/nekitdev/non-empty-str/tree/v0.7.1) (2025-04-30)
+
+No significant changes.
+
 ## [0.7.0](https://github.com/nekitdev/non-empty-str/tree/v0.7.0) (2025-04-24)
 
 No significant changes.
