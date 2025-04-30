@@ -1,6 +1,6 @@
 [package]
 name = "non-empty-str"
-version = "0.7.0"
+version = "0.7.1"
 authors = ["nekitdev <nekit@nekit.dev>"]
 edition = "2024"
 description = "Non-empty strings."
@@ -43,5 +43,5 @@ alloc = ["serde?/alloc", "into-static?/alloc"]
 std = ["serde?/std", "into-static?/std"]
 
 [package.metadata.docs.rs]
-features = ["serde", "into-static"]
+features = ["serde", "static"]
 rustdoc-args = ["--cfg", "docsrs"]
