@@ -12,7 +12,7 @@ keywords = ["non-empty", "string"]
 categories = ["no-std", "no-std::no-alloc", "rust-patterns"]
 
 [dependencies.const-macros]
-version = "0.3.0"
+version = "0.3.1"
 
 [dependencies.into-static]
 version = "0.5.0"
