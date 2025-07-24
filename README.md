@@ -21,7 +21,7 @@ Or by directly specifying it in the configuration like so:
 
 ```toml
 [dependencies]
-non-empty-str = "0.8.0"
+non-empty-str = "0.8.1"
 ```
 
 Alternatively, you can add it directly from the source:
