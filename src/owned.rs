@@ -83,6 +83,12 @@ impl From<&Str> for OwnedStr {
     }
 }
 
+impl AsRef<Str> for OwnedStr {
+    fn as_ref(&self) -> &Str {
+        self.as_str()
+    }
+}
+
 impl Deref for OwnedStr {
     type Target = Str;
 
