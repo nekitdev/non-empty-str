@@ -128,6 +128,7 @@ impl OwnedStr {
     const fn assert_non_empty(&self) {
         use core::hint::assert_unchecked;
 
+        // SAFETY: the string is non-empty by construction
         unsafe {
             assert_unchecked(!self.inner.is_empty());
         }
@@ -137,6 +138,7 @@ impl OwnedStr {
     #[allow(clippy::should_implement_trait)]
     #[must_use]
     pub fn from_str(string: &Str) -> Self {
+        // SAFETY: the string is non-empty by construction
         unsafe { Self::new_unchecked(string.get().to_owned()) }
     }
 
