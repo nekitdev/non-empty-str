@@ -1,22 +1,29 @@
-//! Macros used for constructing non-empty strings.
+//! Macros for creating non-empty strings in `const` contexts.
 
-/// Constructs [`Str`] from the given string, panicking if it is empty.
+/// Constantly constructs [`Str`] from the given string, failing compilation if the string is empty.
+///
+/// # Examples
+///
+/// Simple usage:
+///
+/// ```
+/// use non_empty_str::const_str;
+///
+/// let nekit = const_str!("nekit");
+/// ```
+///
+/// Compilation failure if the string is empty:
+///
+/// ```compile_fail
+/// use non_empty_str::const_str;
+///
+/// let empty = const_str!("");
+/// ```
 ///
 /// [`Str`]: crate::str::Str
 #[macro_export]
 macro_rules! const_str {
     ($string: expr) => {
-        $crate::str::Str::new_ok($string).expect($crate::empty::EMPTY)
-    };
-}
-
-/// Similar to [`const_str`], but constructs borrowed [`CowStr`].
-///
-/// [`CowStr`]: crate::cow::CowStr
-#[cfg(any(feature = "alloc", feature = "std"))]
-#[macro_export]
-macro_rules! const_borrowed_str {
-    ($string: expr) => {
-        $crate::cow::CowStr::borrowed_ok($string).expect($crate::empty::EMPTY)
+        const { $crate::str::Str::from_str($string).expect($crate::str::EMPTY) }
     };
 }

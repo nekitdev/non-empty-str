@@ -3,51 +3,68 @@
 #[cfg(not(any(feature = "std", feature = "alloc")))]
 compile_error!("expected either `std` or `alloc` to be enabled");
 
-#[cfg(feature = "unsafe-assert")]
-use core::hint::assert_unchecked;
-
-use core::{fmt, ops::Deref};
-
 #[cfg(all(not(feature = "std"), feature = "alloc"))]
 use alloc::{borrow::ToOwned, string::String};
 
-use const_macros::{const_early, const_ok};
+use core::{borrow::Borrow, fmt, ops::Deref};
 
-#[cfg(feature = "serde")]
-use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Error};
+use thiserror::Error;
 
-use crate::{cow::CowStr, empty::Empty, str::Str};
+use crate::str::Str;
 
-/// Represents non-empty owned strings.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct OwnedStr {
-    value: String,
+/// The error message used when the owned string is empty.
+pub const EMPTY_OWNED: &str = "the owned string is empty";
+
+/// Similar to [`Empty`], but holds the empty string provided.
+///
+/// [`Empty`]: crate::str::Empty
+#[derive(Debug, Error)]
+#[error("{EMPTY_OWNED}")]
+#[cfg_attr(
+    feature = "diagnostics",
+    derive(miette::Diagnostic),
+    diagnostic(
+        code(non_empty_str::owned),
+        help("make sure the owned string is non-empty")
+    )
+)]
+pub struct EmptyOwned {
+    string: String,
 }
 
-#[cfg(feature = "serde")]
-impl Serialize for OwnedStr {
-    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        self.get().serialize(serializer)
+impl EmptyOwned {
+    const fn new(string: String) -> Self {
+        Self { string }
+    }
+
+    /// Returns the contained empty string.
+    #[must_use]
+    pub fn get(self) -> String {
+        self.string
     }
 }
 
-#[cfg(feature = "serde")]
-impl<'de> Deserialize<'de> for OwnedStr {
-    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        let string = String::deserialize(deserializer)?;
+/// Represents non-empty [`String`] values.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[repr(transparent)]
+pub struct OwnedStr {
+    inner: String,
+}
 
-        Self::new(string).map_err(Error::custom)
+impl Borrow<Str> for OwnedStr {
+    fn borrow(&self) -> &Str {
+        self.as_str()
     }
 }
 
 impl fmt::Display for OwnedStr {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.get().fmt(formatter)
+        self.as_str().fmt(formatter)
     }
 }
 
 impl TryFrom<String> for OwnedStr {
-    type Error = Empty;
+    type Error = EmptyOwned;
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
         Self::new(value)
@@ -55,49 +72,38 @@ impl TryFrom<String> for OwnedStr {
 }
 
 impl From<OwnedStr> for String {
-    fn from(owned: OwnedStr) -> Self {
-        owned.take()
+    fn from(string: OwnedStr) -> Self {
+        string.get()
     }
 }
 
-impl From<Str<'_>> for OwnedStr {
-    fn from(string: Str<'_>) -> Self {
+impl From<&Str> for OwnedStr {
+    fn from(string: &Str) -> Self {
         Self::from_str(string)
     }
 }
 
-impl From<CowStr<'_>> for OwnedStr {
-    fn from(cow: CowStr<'_>) -> Self {
-        Self::from_cow_str(cow)
-    }
-}
-
 impl Deref for OwnedStr {
-    type Target = str;
+    type Target = Str;
 
     fn deref(&self) -> &Self::Target {
-        self.get()
+        self.as_str()
     }
 }
 
 impl OwnedStr {
-    /// Constructs [`Self`], provided that the value is non-empty.
+    /// Constructs [`Self`], provided that the [`String`] is non-empty.
     ///
     /// # Errors
     ///
-    /// Returns [`Empty`] if the string is empty.
-    pub fn new(value: String) -> Result<Self, Empty> {
-        const_early!(value.is_empty() => Empty);
+    /// Returns [`EmptyOwned`] if the string is empty.
+    pub const fn new(string: String) -> Result<Self, EmptyOwned> {
+        if string.is_empty() {
+            return Err(EmptyOwned::new(string));
+        }
 
-        // SAFETY: the value is non-empty at this point
-        Ok(unsafe { Self::new_unchecked(value) })
-    }
-
-    /// Similar to [`new`], but the error is discarded.
-    ///
-    /// [`new`]: Self::new
-    pub fn new_ok(value: String) -> Option<Self> {
-        const_ok!(Self::new(value))
+        // SAFETY: the string is non-empty at this point
+        Ok(unsafe { Self::new_unchecked(string) })
     }
 
     /// Constructs [`Self`] without checking if the value is non-empty.
@@ -105,42 +111,68 @@ impl OwnedStr {
     /// # Safety
     ///
     /// The caller must ensure that the value is non-empty.
-    pub const unsafe fn new_unchecked(value: String) -> Self {
-        Self { value }
+    #[must_use]
+    pub const unsafe fn new_unchecked(inner: String) -> Self {
+        debug_assert!(!inner.is_empty());
+
+        Self { inner }
     }
 
     #[cfg(feature = "unsafe-assert")]
-    fn assert_non_empty(&self) {
+    const fn assert_non_empty(&self) {
+        use core::hint::assert_unchecked;
+
         unsafe {
-            assert_unchecked(!self.value.is_empty());
+            assert_unchecked(!self.inner.is_empty());
         }
     }
 
     /// Constructs [`Self`] from [`Str`] via cloning.
-    pub fn from_str(value: Str<'_>) -> Self {
-        // SAFETY: the contained string is non-empty
-        unsafe { Self::new_unchecked(value.take().to_owned()) }
+    #[allow(clippy::should_implement_trait)]
+    #[must_use]
+    pub fn from_str(string: &Str) -> Self {
+        unsafe { Self::new_unchecked(string.get().to_owned()) }
     }
 
-    /// Constructs [`Self`] from [`CowStr`] via (optionally) cloning.
-    pub fn from_cow_str(value: CowStr<'_>) -> Self {
-        // SAFETY: the contained string is non-empty
-        unsafe { Self::new_unchecked(value.take().into_owned()) }
+    /// Returns contained string reference as [`Str`].
+    #[must_use]
+    pub const fn as_str(&self) -> &Str {
+        // SAFETY: the string is non-empty by construction
+        unsafe { Str::from_str_unchecked(self.inner.as_str()) }
     }
 
-    /// Consumes [`Self`] and returns the contained [`String`].
-    pub fn take(self) -> String {
+    /// Returns the contained [`String`].
+    #[must_use]
+    pub fn get(self) -> String {
         #[cfg(feature = "unsafe-assert")]
         self.assert_non_empty();
 
-        self.value
+        self.inner
+    }
+}
+
+#[cfg(feature = "serde")]
+mod serde {
+    #[cfg(all(not(feature = "std"), feature = "alloc"))]
+    use alloc::string::String;
+
+    use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Error};
+
+    use super::OwnedStr;
+
+    impl Serialize for OwnedStr {
+        fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+            self.as_str().serialize(serializer)
+        }
     }
 
-    /// Returns the contained string reference.
-    pub fn get(&self) -> &str {
-        #[cfg(feature = "unsafe-assert")]
-        self.assert_non_empty();
+    impl<'de> Deserialize<'de> for OwnedStr {
+        fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+            let string = String::deserialize(deserializer)?;
 
-        self.value.as_str()
+            let non_empty = string.try_into().map_err(D::Error::custom)?;
+
+            Ok(non_empty)
+        }
     }
 }
