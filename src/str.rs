@@ -79,25 +79,47 @@ impl Deref for Str {
 impl Str {
     /// Constructs [`Self`] from anything that can be converted to string, provided it is non-empty.
     ///
+    /// Prefer [`try_from_str`] if only [`str`] is used, as this allows for `const` evaluation.
+    ///
     /// # Errors
     ///
     /// Returns [`Empty`] if the string is empty.
+    ///
+    /// [`try_from_str`]: Self::try_from_str
     pub fn try_new<S: AsRef<str> + ?Sized>(string: &S) -> Result<&Self, Empty> {
         Self::try_from_str(string.as_ref())
     }
 
     /// Similar to [`try_new`], but the error is discarded.
     ///
+    /// Prefer [`from_str`] if only [`str`] is used, as this allows for `const` evaluation.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use non_empty_str::Str;
+    ///
+    /// let non_empty = Str::new("Hello, world!").unwrap();
+    ///
+    /// // `Str` is `AsRef<str>`, so it can also be used!
+    /// let from_non_empty = Str::new(non_empty).unwrap();
+    /// ```
+    ///
     /// [`try_new`]: Self::try_new
+    /// [`from_str`]: Self::from_str
     pub fn new<S: AsRef<str> + ?Sized>(string: &S) -> Option<&Self> {
         Self::from_str(string.as_ref())
     }
 
     /// Constructs [`Self`] from anything that can be converted to string, without doing any checks.
     ///
+    /// Prefer [`from_str_unchecked`] if only [`str`] is used; this allows for `const` evaluation.
+    ///
     /// # Safety
     ///
     /// The caller must ensure that the string is non-empty.
+    ///
+    /// [`from_str_unchecked`]: Self::from_str_unchecked
     #[must_use]
     pub unsafe fn new_unchecked<S: AsRef<str> + ?Sized>(string: &S) -> &Self {
         // SAFETY: the caller must ensure that the string is non-empty
@@ -122,7 +144,7 @@ impl Str {
     ///
     /// # Examples
     ///
-    /// Basic usage:
+    /// Basic snippet:
     ///
     /// ```
     /// use non_empty_str::Str;
@@ -130,7 +152,7 @@ impl Str {
     /// let message = Str::from_str("Hello, world!").unwrap();
     /// ```
     ///
-    /// [`None`] returned if the string is empty:
+    /// [`None`] is returned if the string is empty, therefore the following snippet panics:
     ///
     /// ```should_panic
     /// use non_empty_str::Str;

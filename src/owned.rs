@@ -6,11 +6,11 @@ compile_error!("expected either `std` or `alloc` to be enabled");
 #[cfg(all(not(feature = "std"), feature = "alloc"))]
 use alloc::{borrow::ToOwned, string::String};
 
-use core::{borrow::Borrow, fmt, ops::Deref};
+use core::{borrow::Borrow, fmt, ops::Deref, str::FromStr};
 
 use thiserror::Error;
 
-use crate::str::Str;
+use crate::str::{Empty, Str};
 
 /// The error message used when the owned string is empty.
 pub const EMPTY_OWNED: &str = "the owned string is empty";
@@ -33,6 +33,7 @@ pub struct EmptyOwned {
 }
 
 impl EmptyOwned {
+    // NOTE: this is private to prevent creating this error with non-empty strings
     const fn new(string: String) -> Self {
         Self { string }
     }
@@ -89,6 +90,24 @@ impl AsRef<Str> for OwnedStr {
     }
 }
 
+impl AsRef<str> for OwnedStr {
+    fn as_ref(&self) -> &str {
+        self.as_str().get()
+    }
+}
+
+impl FromStr for OwnedStr {
+    type Err = Empty;
+
+    fn from_str(string: &str) -> Result<Self, Self::Err> {
+        let non_empty = Str::try_from_str(string)?;
+
+        let owned = Self::from_str(non_empty);
+
+        Ok(owned)
+    }
+}
+
 impl Deref for OwnedStr {
     type Target = Str;
 
@@ -103,6 +122,26 @@ impl OwnedStr {
     /// # Errors
     ///
     /// Returns [`EmptyOwned`] if the string is empty.
+    ///
+    /// # Examples
+    ///
+    /// Basic snippet:
+    ///
+    /// ```
+    /// use non_empty_str::OwnedStr;
+    ///
+    /// let message = OwnedStr::new("Hello, world!".to_owned()).unwrap();
+    /// ```
+    ///
+    /// Handling possible errors and recovering empty strings:
+    ///
+    /// ```
+    /// use non_empty_str::OwnedStr;
+    ///
+    /// let empty_owned = OwnedStr::new(String::new()).unwrap_err();
+    ///
+    /// let empty = empty_owned.get();
+    /// ```
     pub const fn new(string: String) -> Result<Self, EmptyOwned> {
         if string.is_empty() {
             return Err(EmptyOwned::new(string));
@@ -135,6 +174,18 @@ impl OwnedStr {
     }
 
     /// Constructs [`Self`] from [`Str`] via cloning.
+    ///
+    /// # Examples
+    ///
+    /// Basic snippet:
+    ///
+    /// ```
+    /// use non_empty_str::{OwnedStr, Str};
+    ///
+    /// let nekit = Str::from_str("nekit").unwrap();
+    ///
+    /// let owned = OwnedStr::from_str(nekit);
+    /// ```
     #[allow(clippy::should_implement_trait)]
     #[must_use]
     pub fn from_str(string: &Str) -> Self {
