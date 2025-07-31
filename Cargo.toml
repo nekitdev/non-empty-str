@@ -1,6 +1,6 @@
 [package]
 name = "non-empty-str"
-version = "0.8.1"
+version = "0.9.0"
 authors = ["nekitdev <nekit@nekit.dev>"]
 edition = "2024"
 description = "Non-empty strings."

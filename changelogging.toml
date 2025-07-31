@@ -1,6 +1,6 @@
 [context]
 name = "non-empty-str"
-version = "0.8.1"
+version = "0.9.0"
 url = "https://github.com/nekitdev/non-empty-str"
 
 [formats]
