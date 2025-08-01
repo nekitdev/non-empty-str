@@ -62,6 +62,12 @@ impl<'s> From<&'s Str> for &'s str {
     }
 }
 
+impl AsRef<Self> for Str {
+    fn as_ref(&self) -> &Self {
+        self
+    }
+}
+
 impl AsRef<str> for Str {
     fn as_ref(&self) -> &str {
         self.get()

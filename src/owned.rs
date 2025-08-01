@@ -84,6 +84,18 @@ impl From<&Str> for OwnedStr {
     }
 }
 
+impl AsRef<Self> for OwnedStr {
+    fn as_ref(&self) -> &Self {
+        self
+    }
+}
+
+impl AsRef<String> for OwnedStr {
+    fn as_ref(&self) -> &String {
+        self.as_string()
+    }
+}
+
 impl AsRef<Str> for OwnedStr {
     fn as_ref(&self) -> &Str {
         self.as_str()
@@ -109,10 +121,10 @@ impl FromStr for OwnedStr {
 }
 
 impl Deref for OwnedStr {
-    type Target = Str;
+    type Target = String;
 
     fn deref(&self) -> &Self::Target {
-        self.as_str()
+        self.as_string()
     }
 }
 
@@ -198,6 +210,15 @@ impl OwnedStr {
     pub const fn as_str(&self) -> &Str {
         // SAFETY: the string is non-empty by construction
         unsafe { Str::from_str_unchecked(self.inner.as_str()) }
+    }
+
+    /// Returns the contained string reference.
+    #[must_use]
+    pub const fn as_string(&self) -> &String {
+        #[cfg(feature = "unsafe-assert")]
+        self.assert_non_empty();
+
+        &self.inner
     }
 
     /// Returns the contained [`String`].
