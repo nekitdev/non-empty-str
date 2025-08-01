@@ -2,6 +2,18 @@
 
 <!-- changelogging: start -->
 
+## [0.10.0](https://github.com/nekitdev/non-empty-str/tree/v0.10.0) (2025-08-01)
+
+### Features
+
+- Added `AsRef<Self>` for `Str` and `OwnedStr`; also implemented `AsRef<String>` for `OwnedStr`.
+
+- Added `as_string` to `OwnedStr` that returns `&String`.
+
+### Changes
+
+- The `Deref` target of `OwnedStr` was changed to `String` instead of `Str`.
+
 ## [0.9.0](https://github.com/nekitdev/non-empty-str/tree/v0.9.0) (2025-07-31)
 
 ### Changes
