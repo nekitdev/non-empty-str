@@ -67,8 +67,8 @@ impl fmt::Display for OwnedStr {
 impl TryFrom<String> for OwnedStr {
     type Error = EmptyOwned;
 
-    fn try_from(value: String) -> Result<Self, Self::Error> {
-        Self::new(value)
+    fn try_from(string: String) -> Result<Self, Self::Error> {
+        Self::new(string)
     }
 }
 
@@ -163,11 +163,11 @@ impl OwnedStr {
         Ok(unsafe { Self::new_unchecked(string) })
     }
 
-    /// Constructs [`Self`] without checking if the value is non-empty.
+    /// Constructs [`Self`] without checking if the string is non-empty.
     ///
     /// # Safety
     ///
-    /// The caller must ensure that the value is non-empty.
+    /// The caller must ensure that the string is non-empty.
     #[must_use]
     pub const unsafe fn new_unchecked(inner: String) -> Self {
         debug_assert!(!inner.is_empty());
