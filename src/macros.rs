@@ -1,29 +1,63 @@
-//! Macros for creating non-empty strings in `const` contexts.
+//! Macros for creating non-empty strings.
 
-/// Constantly constructs [`Str`] from the given string, failing compilation if the string is empty.
+/// Constructs [`NonEmptyStr`] from the given string, panicking if the it is empty.
 ///
 /// # Examples
 ///
 /// Simple usage:
 ///
 /// ```
-/// use non_empty_str::const_str;
+/// use non_empty_str::non_empty_str;
 ///
-/// let nekit = const_str!("nekit");
+/// let nekit = non_empty_str!("nekit");
 /// ```
 ///
-/// Compilation failure if the string is empty:
+/// Panicking if the string is empty:
+///
+/// ```should_panic
+/// use non_empty_str::non_empty_str;
+///
+/// let never = non_empty_str!("");
+/// ```
+///
+/// Compilation failure when in `const` contexts:
 ///
 /// ```compile_fail
-/// use non_empty_str::const_str;
+/// use non_empty_str::non_empty_str;
 ///
-/// let empty = const_str!("");
+/// let never = const { non_empty_str!("") };
 /// ```
 ///
-/// [`Str`]: crate::str::Str
+/// [`NonEmptyStr`]: crate::str::NonEmptyStr
 #[macro_export]
-macro_rules! const_str {
+macro_rules! non_empty_str {
     ($string: expr) => {
-        const { $crate::str::Str::from_str($string).expect($crate::str::EMPTY) }
+        $crate::str::NonEmptyStr::from_str($string).expect($crate::str::EMPTY_STR)
+    };
+}
+
+/// Similar to [`non_empty_str!`] but for `const` contexts.
+///
+/// Note that the provided expression must be const-evaluatable, else the compilation will fail.
+///
+/// # Examples
+///
+/// ```
+/// use non_empty_str::const_non_empty_str;
+///
+/// let message = const_non_empty_str!("Hello, world!");
+/// ```
+///
+/// Failing compilation on empty strings:
+///
+/// ```compile_fail
+/// use non_empty_str::const_non_empty_str;
+///
+/// let never = const_non_empty_str!("");
+/// ```
+#[macro_export]
+macro_rules! const_non_empty_str {
+    ($string: expr) => {
+        const { $crate::non_empty_str!($string) }
     };
 }
