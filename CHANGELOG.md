@@ -2,6 +2,12 @@
 
 <!-- changelogging: start -->
 
+## [0.11.1](https://github.com/nekitdev/non-empty-str/tree/v0.11.1) (2025-10-14)
+
+### Features
+
+- Added `FromStr` implementation for `NonEmptyString`.
+
 ## [0.11.0](https://github.com/nekitdev/non-empty-str/tree/v0.11.0) (2025-10-14)
 
 ### Changes
