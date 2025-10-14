@@ -1,6 +1,6 @@
 [package]
 name = "non-empty-str"
-version = "0.11.0"
+version = "0.11.1"
 authors = ["nekitdev <nekit@nekit.dev>"]
 edition = "2024"
 rust-version = "1.90"
@@ -28,7 +28,7 @@ default-features = false
 version = "0.1.0"
 
 [dependencies.ownership]
-version = "0.2.2"
+version = "0.2.3"
 default-features = false
 optional = true
 

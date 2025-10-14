@@ -19,6 +19,7 @@ use core::{
     convert::Infallible,
     fmt,
     ops::{Add, AddAssign, Deref, DerefMut, RangeBounds},
+    str::FromStr,
 };
 
 use non_empty_iter::{FromNonEmptyIterator, IntoNonEmptyIterator, NonEmptyIterator};
@@ -184,6 +185,14 @@ impl fmt::Write for NonEmptyString {
 impl fmt::Display for NonEmptyString {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.as_string().fmt(formatter)
+    }
+}
+
+impl FromStr for NonEmptyString {
+    type Err = EmptyStr;
+
+    fn from_str(string: &str) -> Result<Self, Self::Err> {
+        NonEmptyStr::try_from_str(string).map(Self::from_non_empty_str)
     }
 }
 
