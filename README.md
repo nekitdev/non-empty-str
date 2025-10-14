@@ -3,6 +3,7 @@
 [![License][License Badge]][License]
 [![Version][Version Badge]][Crate]
 [![Downloads][Downloads Badge]][Crate]
+[![Documentation][Documentation Badge]][Documentation]
 [![Test][Test Badge]][Actions]
 
 > *Non-empty strings.*
@@ -75,4 +76,5 @@ If you are interested in contributing to `non-empty-str`, make sure to take a lo
 [License Badge]: https://img.shields.io/crates/l/non-empty-str
 [Version Badge]: https://img.shields.io/crates/v/non-empty-str
 [Downloads Badge]: https://img.shields.io/crates/dr/non-empty-str
+[Documentation Badge]: https://img.shields.io/docsrs/non-empty-str
 [Test Badge]: https://github.com/nekitdev/non-empty-str/workflows/test/badge.svg
