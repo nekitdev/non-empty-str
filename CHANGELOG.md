@@ -2,6 +2,12 @@
 
 <!-- changelogging: start -->
 
+## [0.11.0](https://github.com/nekitdev/non-empty-str/tree/v0.11.0) (2025-10-14)
+
+### Changes
+
+- The entire crate was rewritten. Refer to the [docs](https://docs.rs/non-empty-str) for more info.
+
 ## [0.10.0](https://github.com/nekitdev/non-empty-str/tree/v0.10.0) (2025-08-01)
 
 ### Features
