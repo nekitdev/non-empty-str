@@ -4,7 +4,7 @@
 compile_error!("expected either `std` or `alloc` to be enabled");
 
 #[cfg(feature = "std")]
-use std::{borrow::Cow, collections::TryReserveError};
+use std::{borrow::Cow, collections::TryReserveError, ffi::OsStr, path::Path};
 
 #[cfg(all(not(feature = "std"), feature = "alloc"))]
 use alloc::{
@@ -325,6 +325,20 @@ impl AsMut<str> for NonEmptyString {
 impl AsRef<Bytes> for NonEmptyString {
     fn as_ref(&self) -> &Bytes {
         self.as_bytes()
+    }
+}
+
+#[cfg(feature = "std")]
+impl AsRef<OsStr> for NonEmptyString {
+    fn as_ref(&self) -> &OsStr {
+        self.as_string().as_ref()
+    }
+}
+
+#[cfg(feature = "std")]
+impl AsRef<Path> for NonEmptyString {
+    fn as_ref(&self) -> &Path {
+        self.as_string().as_ref()
     }
 }
 

@@ -1,5 +1,8 @@
 //! Non-empty [`str`].
 
+#[cfg(feature = "std")]
+use std::{ffi::OsStr, path::Path};
+
 use core::{
     fmt,
     ops::{Deref, DerefMut, Index, IndexMut},
@@ -209,6 +212,20 @@ impl AsRef<NonEmptyBytes> for NonEmptyStr {
 impl AsRef<Bytes> for NonEmptyStr {
     fn as_ref(&self) -> &Bytes {
         self.as_bytes()
+    }
+}
+
+#[cfg(feature = "std")]
+impl AsRef<OsStr> for NonEmptyStr {
+    fn as_ref(&self) -> &OsStr {
+        self.as_str().as_ref()
+    }
+}
+
+#[cfg(feature = "std")]
+impl AsRef<Path> for NonEmptyStr {
+    fn as_ref(&self) -> &Path {
+        self.as_str().as_ref()
     }
 }
 
