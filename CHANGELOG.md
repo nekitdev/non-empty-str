@@ -2,6 +2,12 @@
 
 <!-- changelogging: start -->
 
+## [0.11.3](https://github.com/nekitdev/non-empty-str/tree/v0.11.3) (2025-10-17)
+
+### Features
+
+- Added `AsRef<OsStr>` and `AsRef<Path>` to `NonEmptyStr` and `NonEmptyString`.
+
 ## [0.11.2](https://github.com/nekitdev/non-empty-str/tree/v0.11.2) (2025-10-15)
 
 No significant changes.
