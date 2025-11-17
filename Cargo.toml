@@ -28,7 +28,7 @@ default-features = false
 version = "0.1.0"
 
 [dependencies.ownership]
-version = "0.2.4"
+version = "0.3.0"
 default-features = false
 optional = true
 
