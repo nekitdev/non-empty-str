@@ -2,6 +2,16 @@
 
 <!-- changelogging: start -->
 
+## [0.12.0](https://github.com/nekitdev/non-empty-str/tree/v0.12.0) (2026-07-16)
+
+### Changes
+
+- `PartialEq` and `PartialOrd` have many more implementations now.
+
+### Removals
+
+- `diagnostics` feature was removed along with `miette` dependency.
+
 ## [0.11.3](https://github.com/nekitdev/non-empty-str/tree/v0.11.3) (2025-10-17)
 
 ### Features
