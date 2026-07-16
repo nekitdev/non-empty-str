@@ -1,6 +1,48 @@
 //! Macros for creating non-empty strings.
 
-/// Constructs [`NonEmptyStr`] from the given string, panicking if the it is empty.
+/// Constructs [`NonEmptyStr`] from the given string, panicking if it is empty,
+/// and then converts it into [`NonEmptyString`].
+///
+/// # Examples
+///
+/// Simple usage:
+///
+/// ```
+/// use non_empty_str::non_empty_string;
+///
+/// let nekit = non_empty_string!("nekit");
+/// ```
+///
+/// Expands to:
+///
+/// ```
+/// use non_empty_str::non_empty_str;
+///
+/// let nekit = non_empty_str!("nekit").to_non_empty_string();
+/// ```
+///
+/// See [`non_empty_str!`] for more details.
+///
+/// Panicking if the string is empty:
+///
+/// ```should_panic
+/// use non_empty_str::non_empty_string;
+///
+/// let never = non_empty_string!("");
+/// ```
+///
+/// [`NonEmptyStr`]: crate::str::NonEmptyStr
+/// [`NonEmptyString`]: crate::string::NonEmptyString
+/// [`non_empty_str!`]: crate::non_empty_str
+#[macro_export]
+#[cfg(any(feature = "std", feature = "alloc"))]
+macro_rules! non_empty_string {
+    ($string: expr) => {
+        $crate::non_empty_str!($string).to_non_empty_string()
+    };
+}
+
+/// Constructs [`NonEmptyStr`] from the given string, panicking if it is empty.
 ///
 /// # Examples
 ///
@@ -55,6 +97,8 @@ macro_rules! non_empty_str {
 ///
 /// let never = const_non_empty_str!("");
 /// ```
+///
+/// [`non_empty_str!`]: crate::non_empty_str
 #[macro_export]
 macro_rules! const_non_empty_str {
     ($string: expr) => {

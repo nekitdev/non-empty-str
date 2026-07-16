@@ -4,7 +4,7 @@ use core::{iter::Map, str};
 
 use non_empty_iter::NonEmptyIterator;
 
-use crate::{internal::Byte, str::NonEmptyStr};
+use crate::{internals::Byte, str::NonEmptyStr};
 
 /// Represents functions mapping non-empty [`prim@str`] to [`NonEmptyStr`].
 ///

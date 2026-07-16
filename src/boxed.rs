@@ -1,10 +1,14 @@
 //! Non-empty [`Box<str>`].
 
-#[cfg(not(any(feature = "std", feature = "alloc")))]
-compile_error!("expected either `std` or `alloc` to be enabled");
-
-#[cfg(all(not(feature = "std"), feature = "alloc"))]
-use alloc::{boxed::Box, string::String};
+cfg_select! {
+    feature = "std" => {}
+    feature = "alloc" => {
+        use alloc::{boxed::Box, string::String};
+    }
+    _ => {
+        compile_error!("expected either `std` or `alloc` to be enabled");
+    }
+}
 
 use non_empty_iter::{FromNonEmptyIterator, IntoNonEmptyIterator};
 use non_empty_slice::{NonEmptyBoxedBytes, NonEmptyBytes};
@@ -12,7 +16,7 @@ use thiserror::Error;
 
 use crate::{
     cow::NonEmptyCowStr,
-    internal::Bytes,
+    internals::Bytes,
     str::NonEmptyStr,
     string::{EmptyString, NonEmptyString},
 };

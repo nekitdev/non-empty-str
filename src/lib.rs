@@ -17,26 +17,27 @@ pub mod iter;
 #[doc(inline)]
 pub use str::{EmptyStr, FromNonEmptyStr, MaybeEmptyUtf8Error, NonEmptyStr, NonEmptyUtf8Error};
 
-#[cfg(any(feature = "std", feature = "alloc"))]
-pub mod string;
+cfg_select! {
+    any(feature = "std", feature = "alloc") => {
+        pub mod boxed;
+        pub mod cow;
+        pub mod string;
 
-#[doc(inline)]
-#[cfg(any(feature = "std", feature = "alloc"))]
-pub use string::{EmptyString, FromMaybeEmptyUtf8Error, FromNonEmptyUtf8Error, NonEmptyString};
+        #[doc(inline)]
+        pub use boxed::{EmptyBoxedStr, NonEmptyBoxedStr};
 
-#[cfg(any(feature = "std", feature = "alloc"))]
-pub mod boxed;
+        #[doc(inline)]
+        pub use cow::NonEmptyCowStr;
 
-#[doc(inline)]
-#[cfg(any(feature = "std", feature = "alloc"))]
-pub use boxed::{EmptyBoxedStr, NonEmptyBoxedStr};
+        #[doc(inline)]
+        pub use string::{
+            EmptyString, FromMaybeEmptyUtf8Error, FromNonEmptyUtf8Error, NonEmptyString
+        };
+    }
+    _ => {}
+}
 
-#[cfg(any(feature = "std", feature = "alloc"))]
-pub mod cow;
-
-#[doc(inline)]
-#[cfg(any(feature = "std", feature = "alloc"))]
-pub use cow::NonEmptyCowStr;
+pub(crate) mod cmp;
 
 #[cfg(feature = "ownership")]
 pub(crate) mod ownership;
@@ -44,4 +45,4 @@ pub(crate) mod ownership;
 #[cfg(feature = "serde")]
 pub(crate) mod serde;
 
-pub(crate) mod internal;
+pub(crate) mod internals;

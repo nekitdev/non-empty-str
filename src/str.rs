@@ -5,6 +5,7 @@ use std::{ffi::OsStr, path::Path};
 
 use core::{
     fmt,
+    hash::{Hash, Hasher},
     ops::{Deref, DerefMut, Index, IndexMut},
     ptr,
     slice::SliceIndex,
@@ -16,7 +17,7 @@ use non_zero_size::Size;
 use thiserror::Error;
 
 use crate::{
-    internal::{Bytes, MutBytes, RawBytes, attempt, map_error},
+    internals::{Bytes, MutBytes, RawBytes, attempt, map_error},
     iter::{
         Bytes as BytesIter, CharIndices, Chars, EncodeUtf16, EscapeDebug, EscapeDefault,
         EscapeUnicode, Lines, SplitAsciiWhitespace, SplitWhitespace,
@@ -29,11 +30,6 @@ pub const EMPTY_STR: &str = "the string is empty";
 /// Represents errors returned when received strings are empty.
 #[derive(Debug, Error)]
 #[error("{EMPTY_STR}")]
-#[cfg_attr(
-    feature = "diagnostics",
-    derive(miette::Diagnostic),
-    diagnostic(code(non_empty_str::str), help("make sure the string is non-empty"))
-)]
 pub struct EmptyStr;
 
 /// Represents errors returned when the received non-empty bytes are not valid UTF-8.
@@ -45,14 +41,6 @@ pub struct EmptyStr;
 /// [`from_non_empty_utf8_mut`]: NonEmptyStr::from_non_empty_utf8_mut
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Error)]
 #[error("{error}")]
-#[cfg_attr(
-    feature = "diagnostics",
-    derive(miette::Diagnostic),
-    diagnostic(
-        code(non_empty_str::str::utf8),
-        help("make sure the bytes are valid UTF-8")
-    )
-)]
 pub struct NonEmptyUtf8Error {
     #[from]
     #[source]
@@ -81,11 +69,6 @@ impl NonEmptyUtf8Error {
 /// [`from_utf8_mut`]: NonEmptyStr::from_utf8_mut
 #[derive(Debug, Error)]
 #[error(transparent)]
-#[cfg_attr(
-    feature = "diagnostics",
-    derive(miette::Diagnostic),
-    diagnostic(transparent)
-)]
 pub enum MaybeEmptyUtf8Error {
     /// The received bytes are empty.
     Empty(#[from] EmptySlice),
@@ -107,10 +90,16 @@ pub trait FromNonEmptyStr: Sized {
 }
 
 /// Represents non-empty [`str`] values.
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug)]
 #[repr(transparent)]
 pub struct NonEmptyStr {
     inner: str,
+}
+
+impl Hash for NonEmptyStr {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.as_str().hash(state);
+    }
 }
 
 impl fmt::Display for NonEmptyStr {

@@ -11,7 +11,7 @@ use alloc::borrow::Cow;
 
 use crate::{boxed::NonEmptyBoxedStr, str::NonEmptyStr, string::NonEmptyString};
 
-/// Represents non-empty clone-on-write strings, [`Cow<'_, NonEmptyStr>`](Cow).
+/// Represents non-empty clone-on-write strings, [`Cow<'s, NonEmptyStr>`](Cow).
 pub type NonEmptyCowStr<'s> = Cow<'s, NonEmptyStr>;
 
 impl From<NonEmptyCowStr<'_>> for NonEmptyString {

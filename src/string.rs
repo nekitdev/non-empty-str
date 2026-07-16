@@ -18,6 +18,7 @@ use core::{
     borrow::{Borrow, BorrowMut},
     convert::Infallible,
     fmt,
+    hash::{Hash, Hasher},
     ops::{Add, AddAssign, Deref, DerefMut, RangeBounds},
     str::FromStr,
 };
@@ -31,7 +32,7 @@ use thiserror::Error;
 use crate::{
     boxed::{EmptyBoxedStr, NonEmptyBoxedStr},
     cow::NonEmptyCowStr,
-    internal::{ByteVec, Bytes},
+    internals::{ByteVec, Bytes},
     str::{EmptyStr, FromNonEmptyStr, NonEmptyStr, NonEmptyUtf8Error},
 };
 
@@ -41,11 +42,6 @@ pub const EMPTY_STRING: &str = "the string is empty";
 /// Similar to [`EmptyStr`], but holds the empty string provided.
 #[derive(Debug, Error)]
 #[error("{EMPTY_STRING}")]
-#[cfg_attr(
-    feature = "diagnostics",
-    derive(miette::Diagnostic),
-    diagnostic(code(non_empty_str::string), help("make sure the string is non-empty"))
-)]
 pub struct EmptyString {
     string: String,
 }
@@ -78,17 +74,8 @@ impl EmptyString {
 /// Couples [`NonEmptyUtf8Error`] with the [`NonEmptyByteVec`] that is invalid UTF-8.
 #[derive(Debug, Error)]
 #[error("{error}")]
-#[cfg_attr(
-    feature = "diagnostics",
-    derive(miette::Diagnostic),
-    diagnostic(
-        code(non_empty_str::string::utf8),
-        help("make sure the bytes are valid UTF-8")
-    )
-)]
 pub struct FromNonEmptyUtf8Error {
     #[source]
-    #[cfg_attr(feature = "diagnostics", diagnostic_source)]
     error: NonEmptyUtf8Error,
     bytes: NonEmptyByteVec,
 }
@@ -132,11 +119,6 @@ impl FromNonEmptyUtf8Error {
 /// Represents errors returned when the provided byte vector is empty or invalid UTF-8.
 #[derive(Debug, Error)]
 #[error(transparent)]
-#[cfg_attr(
-    feature = "diagnostics",
-    derive(miette::Diagnostic),
-    diagnostic(transparent)
-)]
 pub enum FromMaybeEmptyUtf8Error {
     /// The received byte vector is empty.
     Empty(#[from] EmptyByteVec),
@@ -145,10 +127,16 @@ pub enum FromMaybeEmptyUtf8Error {
 }
 
 /// Represents non-empty [`String`] values.
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug)]
 #[repr(transparent)]
 pub struct NonEmptyString {
     inner: String,
+}
+
+impl Hash for NonEmptyString {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.as_string().hash(state);
+    }
 }
 
 impl Clone for NonEmptyString {
