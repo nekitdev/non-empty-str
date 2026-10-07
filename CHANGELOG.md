@@ -2,6 +2,15 @@
 
 <!-- changelogging: start -->
 
+## [0.13.0](https://github.com/nekitdev/non-empty-str/tree/v0.13.0) (2026-10-07)
+
+### Features
+
+- Implemented even more comparisons, specifically for `&str` and `&NonEmptyStr`.
+
+- Added [`Valuable`](https://docs.rs/valuable/latest/valuable/trait.Valuable.html)
+  trait implementations for `&NonEmptyStr` and `NonEmptyString`, enabled via `valuable`.
+
 ## [0.12.0](https://github.com/nekitdev/non-empty-str/tree/v0.12.0) (2026-07-16)
 
 ### Changes
