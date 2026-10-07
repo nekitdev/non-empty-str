@@ -44,7 +44,7 @@ features = ["derive"]
 optional = true
 
 [features]
-default = ["std", "serde"]
+default = ["std"]
 ownership = ["dep:ownership", "non-empty-slice/ownership"]
 serde = ["dep:serde"]
 unsafe-assert = []
