@@ -17,10 +17,10 @@ use non_zero_size::Size;
 use thiserror::Error;
 
 use crate::{
-    internals::{Bytes, MutBytes, RawBytes, attempt, map_error},
+    internals::{attempt, map_error},
     iter::{
-        Bytes as BytesIter, CharIndices, Chars, EncodeUtf16, EscapeDebug, EscapeDefault,
-        EscapeUnicode, Lines, SplitAsciiWhitespace, SplitWhitespace,
+        Bytes, CharIndices, Chars, EncodeUtf16, EscapeDebug, EscapeDefault, EscapeUnicode, Lines,
+        SplitAsciiWhitespace, SplitWhitespace,
     },
 };
 
@@ -146,18 +146,18 @@ impl<'b> TryFrom<&'b mut NonEmptyBytes> for &'b mut NonEmptyStr {
     }
 }
 
-impl<'b> TryFrom<&'b Bytes> for &'b NonEmptyStr {
+impl<'b> TryFrom<&'b [u8]> for &'b NonEmptyStr {
     type Error = MaybeEmptyUtf8Error;
 
-    fn try_from(bytes: &'b Bytes) -> Result<Self, Self::Error> {
+    fn try_from(bytes: &'b [u8]) -> Result<Self, Self::Error> {
         NonEmptyStr::from_utf8(bytes)
     }
 }
 
-impl<'b> TryFrom<&'b mut Bytes> for &'b mut NonEmptyStr {
+impl<'b> TryFrom<&'b mut [u8]> for &'b mut NonEmptyStr {
     type Error = MaybeEmptyUtf8Error;
 
-    fn try_from(bytes: &'b mut Bytes) -> Result<Self, Self::Error> {
+    fn try_from(bytes: &'b mut [u8]) -> Result<Self, Self::Error> {
         NonEmptyStr::from_utf8_mut(bytes)
     }
 }
@@ -198,8 +198,8 @@ impl AsRef<NonEmptyBytes> for NonEmptyStr {
     }
 }
 
-impl AsRef<Bytes> for NonEmptyStr {
-    fn as_ref(&self) -> &Bytes {
+impl AsRef<[u8]> for NonEmptyStr {
+    fn as_ref(&self) -> &[u8] {
         self.as_bytes()
     }
 }
@@ -502,7 +502,7 @@ impl NonEmptyStr {
 
     /// Returns the underlying bytes of the string.
     #[must_use]
-    pub const fn as_bytes(&self) -> &Bytes {
+    pub const fn as_bytes(&self) -> &[u8] {
         self.as_str().as_bytes()
     }
 
@@ -511,7 +511,7 @@ impl NonEmptyStr {
     /// # Safety
     ///
     /// The caller must ensure that the bytes remain valid UTF-8.
-    pub const unsafe fn as_bytes_mut(&mut self) -> &mut Bytes {
+    pub const unsafe fn as_bytes_mut(&mut self) -> &mut [u8] {
         // SAFETY: the caller must ensure that the bytes remain valid UTF-8
         unsafe { self.as_mut_str().as_bytes_mut() }
     }
@@ -539,7 +539,7 @@ impl NonEmptyStr {
     /// # Errors
     ///
     /// Returns [`MaybeEmptyUtf8Error`] if the bytes are either empty or not valid UTF-8.
-    pub const fn from_utf8(bytes: &Bytes) -> Result<&Self, MaybeEmptyUtf8Error> {
+    pub const fn from_utf8(bytes: &[u8]) -> Result<&Self, MaybeEmptyUtf8Error> {
         let non_empty = attempt!(
             map_error!(NonEmptyBytes::try_from_slice(bytes) => MaybeEmptyUtf8Error::Empty)
         );
@@ -553,7 +553,7 @@ impl NonEmptyStr {
     /// # Errors
     ///
     /// Returns [`MaybeEmptyUtf8Error`] if the bytes are either empty or not valid UTF-8.
-    pub const fn from_utf8_mut(bytes: &mut Bytes) -> Result<&mut Self, MaybeEmptyUtf8Error> {
+    pub const fn from_utf8_mut(bytes: &mut [u8]) -> Result<&mut Self, MaybeEmptyUtf8Error> {
         let non_empty = attempt!(
             map_error!(NonEmptyBytes::try_from_mut_slice(bytes) => MaybeEmptyUtf8Error::Empty)
         );
@@ -625,7 +625,7 @@ impl NonEmptyStr {
     ///
     /// The caller must ensure that the bytes are valid UTF-8 and non-empty.
     #[must_use]
-    pub const unsafe fn from_utf8_unchecked(bytes: &Bytes) -> &Self {
+    pub const unsafe fn from_utf8_unchecked(bytes: &[u8]) -> &Self {
         // SAFETY: the caller must ensure that the bytes are valid UTF-8 and non-empty
         unsafe { Self::from_str_unchecked(str::from_utf8_unchecked(bytes)) }
     }
@@ -636,15 +636,15 @@ impl NonEmptyStr {
     /// # Safety
     ///
     /// The caller must ensure that the bytes are valid UTF-8 and non-empty.
-    pub const unsafe fn from_utf8_unchecked_mut(bytes: &mut Bytes) -> &mut Self {
+    pub const unsafe fn from_utf8_unchecked_mut(bytes: &mut [u8]) -> &mut Self {
         // SAFETY: the caller must ensure that the bytes are valid UTF-8 and non-empty
         unsafe { Self::from_mut_str_unchecked(str::from_utf8_unchecked_mut(bytes)) }
     }
 
     /// Returns non-empty iterators over the bytes in this string.
     #[must_use]
-    pub const fn bytes(&self) -> BytesIter<'_> {
-        BytesIter::new(self)
+    pub const fn bytes(&self) -> Bytes<'_> {
+        Bytes::new(self)
     }
 
     /// Returns non-empty iterators over the characters in this string.
@@ -699,14 +699,14 @@ impl NonEmptyStr {
     ///
     /// The caller must ensure that the pointer is never written to.
     #[must_use]
-    pub const fn as_ptr(&self) -> RawBytes {
+    pub const fn as_ptr(&self) -> *const u8 {
         self.as_str().as_ptr()
     }
 
     /// Returns the mutable pointer to the underlying bytes of the string.
     ///
     /// The caller must ensure that the string remains valid UTF-8.
-    pub const fn as_mut_ptr(&mut self) -> MutBytes {
+    pub const fn as_mut_ptr(&mut self) -> *mut u8 {
         self.as_mut_str().as_mut_ptr()
     }
 

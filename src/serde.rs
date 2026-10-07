@@ -11,9 +11,15 @@ impl Serialize for NonEmptyStr {
     }
 }
 
+fn deserialize<'de, T: Deserialize<'de>, D: Deserializer<'de>>(
+    deserializer: D,
+) -> Result<T, D::Error> {
+    T::deserialize(deserializer)
+}
+
 impl<'de: 's, 's> Deserialize<'de> for &'s NonEmptyStr {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        let string = <&str>::deserialize(deserializer)?;
+        let string: &'s str = deserialize(deserializer)?;
 
         let non_empty = string.try_into().map_err(D::Error::custom)?;
 

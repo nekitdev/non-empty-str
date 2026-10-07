@@ -16,7 +16,6 @@ use thiserror::Error;
 
 use crate::{
     cow::NonEmptyCowStr,
-    internals::Bytes,
     str::NonEmptyStr,
     string::{EmptyString, NonEmptyString},
 };
@@ -71,7 +70,7 @@ impl From<NonEmptyBoxedStr> for Box<str> {
     }
 }
 
-impl From<NonEmptyBoxedStr> for Box<Bytes> {
+impl From<NonEmptyBoxedStr> for Box<[u8]> {
     fn from(boxed: NonEmptyBoxedStr) -> Self {
         boxed.into_boxed_bytes()
     }
@@ -170,7 +169,7 @@ impl NonEmptyStr {
 
     /// Converts [`Self`] into [`Box<[u8]>`](Box).
     #[must_use]
-    pub fn into_boxed_bytes(self: Box<Self>) -> Box<Bytes> {
+    pub fn into_boxed_bytes(self: Box<Self>) -> Box<[u8]> {
         self.into_boxed_str().into_boxed_bytes()
     }
 
@@ -204,7 +203,7 @@ impl NonEmptyString {
 
     /// Converts [`Self`] into [`Box<[u8]>`](Box).
     #[must_use]
-    pub fn into_boxed_bytes(self) -> Box<Bytes> {
+    pub fn into_boxed_bytes(self) -> Box<[u8]> {
         self.into_non_empty_boxed_str().into_boxed_bytes()
     }
 
