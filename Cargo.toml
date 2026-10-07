@@ -3,7 +3,7 @@ name = "non-empty-str"
 version = "0.12.0"
 authors = ["nekitdev <nekit@nekit.dev>"]
 edition = "2024"
-rust-version = "1.97"
+rust-version = "1.99"
 description = "Non-empty strings."
 documentation = "https://docs.rs/non-empty-str"
 readme = "README.md"
@@ -13,37 +13,50 @@ keywords = ["non-empty", "string"]
 categories = ["no-std", "no-std::no-alloc", "rust-patterns"]
 
 [dependencies.non-empty-iter]
-version = "0.3.1"
+version = "0.4.0"
 default-features = false
 
 [dependencies.non-empty-slice]
-version = "0.6.0"
+version = "0.7.0"
 default-features = false
 
 [dependencies.non-zero-size]
 version = "0.2.0"
 
 [dependencies.ownership]
-version = "0.3.0"
+version = "0.4.0"
 default-features = false
 optional = true
 
 [dependencies.serde]
-version = "1.0.228"
+version = "1.0.229"
 default-features = false
 optional = true
 
 [dependencies.thiserror]
-version = "2.0.18"
+version = "2.0.21"
 default-features = false
 
+[dependencies.valuable]
+version = "0.1.1"
+default-features = false
+features = ["derive"]
+optional = true
+
 [features]
-default = ["std"]
+default = ["std", "serde"]
 ownership = ["dep:ownership", "non-empty-slice/ownership"]
 serde = ["dep:serde"]
 unsafe-assert = []
-alloc = ["serde?/alloc", "non-empty-slice/alloc", "non-empty-iter/alloc", "ownership?/alloc"]
-std = ["serde?/std", "non-empty-slice/std", "non-empty-iter/std", "ownership?/std"]
+valuable = ["dep:valuable"]
+alloc = [
+    "serde?/alloc",
+    "non-empty-slice/alloc",
+    "non-empty-iter/alloc",
+    "ownership?/alloc",
+    "valuable?/alloc",
+]
+std = ["serde?/std", "non-empty-slice/std", "non-empty-iter/std", "ownership?/std", "valuable?/std"]
 
 [package.metadata.docs.rs]
 features = ["serde", "ownership"]

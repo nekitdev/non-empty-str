@@ -1,18 +1,21 @@
 //! Non-empty [`String`].
 
-#[cfg(not(any(feature = "std", feature = "alloc")))]
-compile_error!("expected either `std` or `alloc` to be enabled");
-
-#[cfg(feature = "std")]
-use std::{borrow::Cow, collections::TryReserveError, ffi::OsStr, path::Path};
-
-#[cfg(all(not(feature = "std"), feature = "alloc"))]
-use alloc::{
-    borrow::{Cow, ToOwned},
-    boxed::Box,
-    collections::TryReserveError,
-    string::{String, ToString},
-};
+cfg_select! {
+    feature = "std" => {
+        use std::{borrow::Cow, collections::TryReserveError, ffi::OsStr, path::Path};
+    }
+    feature = "alloc" => {
+        use std::{
+            borrow::{Cow, ToOwned},
+            boxed::Box,
+            collections::TryReserveError,
+            string::{String, ToString},
+        };
+    }
+    _ => {
+        compile_error!("expected either `std` or `alloc` to be enabled");
+    }
+}
 
 use core::{
     borrow::{Borrow, BorrowMut},
@@ -32,7 +35,6 @@ use thiserror::Error;
 use crate::{
     boxed::{EmptyBoxedStr, NonEmptyBoxedStr},
     cow::NonEmptyCowStr,
-    internals::{ByteVec, Bytes},
     str::{EmptyStr, FromNonEmptyStr, NonEmptyStr, NonEmptyUtf8Error},
 };
 
@@ -310,8 +312,8 @@ impl AsMut<str> for NonEmptyString {
     }
 }
 
-impl AsRef<Bytes> for NonEmptyString {
-    fn as_ref(&self) -> &Bytes {
+impl AsRef<[u8]> for NonEmptyString {
+    fn as_ref(&self) -> &[u8] {
         self.as_bytes()
     }
 }
@@ -599,7 +601,7 @@ impl NonEmptyString {
 
     /// Returns the underlying bytes of the string.
     #[must_use]
-    pub const fn as_bytes(&self) -> &Bytes {
+    pub const fn as_bytes(&self) -> &[u8] {
         self.as_str().as_bytes()
     }
 
@@ -608,7 +610,7 @@ impl NonEmptyString {
     /// # Safety
     ///
     /// The caller must ensure that the bytes remain valid UTF-8.
-    pub const unsafe fn as_bytes_mut(&mut self) -> &mut Bytes {
+    pub const unsafe fn as_bytes_mut(&mut self) -> &mut [u8] {
         // SAFETY: getting mutable bytes can not make the string empty
         // moreover, the caller must ensure that the bytes remain valid UTF-8
         unsafe { self.as_mut_str().as_bytes_mut() }
@@ -646,7 +648,7 @@ impl NonEmptyString {
     /// Returns [`EmptySlice`] if the given bytes are empty.
     ///
     /// [`from_non_empty_utf8_lossy`]: Self::from_non_empty_utf8_lossy
-    pub fn from_utf8_lossy(bytes: &Bytes) -> Result<NonEmptyCowStr<'_>, EmptySlice> {
+    pub fn from_utf8_lossy(bytes: &[u8]) -> Result<NonEmptyCowStr<'_>, EmptySlice> {
         NonEmptyBytes::try_from_slice(bytes).map(Self::from_non_empty_utf8_lossy)
     }
 
@@ -658,7 +660,7 @@ impl NonEmptyString {
     /// Returns [`EmptyByteVec`] if the given byte vector is empty.
     ///
     /// [`from_non_empty_utf8_lossy_owned`]: Self::from_non_empty_utf8_lossy_owned
-    pub fn from_utf8_lossy_owned(bytes: ByteVec) -> Result<Self, EmptyByteVec> {
+    pub fn from_utf8_lossy_owned(bytes: Vec<u8>) -> Result<Self, EmptyByteVec> {
         NonEmptyByteVec::new(bytes).map(Self::from_non_empty_utf8_lossy_owned)
     }
 
@@ -703,7 +705,7 @@ impl NonEmptyString {
     /// # Errors
     ///
     /// Returns [`FromMaybeEmptyUtf8Error`] if the byte vector is empty or invalid UTF-8.
-    pub fn from_utf8(bytes: ByteVec) -> Result<Self, FromMaybeEmptyUtf8Error> {
+    pub fn from_utf8(bytes: Vec<u8>) -> Result<Self, FromMaybeEmptyUtf8Error> {
         let non_empty = NonEmptyByteVec::new(bytes)?;
 
         let string = Self::from_non_empty_utf8(non_empty)?;
@@ -720,7 +722,7 @@ impl NonEmptyString {
         let string = String::from_utf8(non_empty.into_vec()).map_err(|error| {
             let non_empty_error = error.utf8_error().into();
 
-            // SAFETY: reclaiming ownership of previously passed non-empty bytes is safe
+            // SAFETY: reclfaiming ownership of previously passed non-empty bytes is safe
             let non_empty = unsafe { NonEmptyByteVec::new_unchecked(error.into_bytes()) };
 
             FromNonEmptyUtf8Error::new(non_empty_error, non_empty)
@@ -749,7 +751,7 @@ impl NonEmptyString {
     ///
     /// The caller must ensure that the byte vector is non-empty and valid UTF-8.
     #[must_use]
-    pub unsafe fn from_utf8_unchecked(bytes: ByteVec) -> Self {
+    pub unsafe fn from_utf8_unchecked(bytes: Vec<u8>) -> Self {
         // SAFETY: the caller must ensure that the bytes are non-empty and valid UTF-8
         unsafe { Self::new_unchecked(String::from_utf8_unchecked(bytes)) }
     }
@@ -779,7 +781,7 @@ impl NonEmptyString {
 
     /// Converts [`Self`] into the underlying byte vector.
     #[must_use]
-    pub fn into_bytes(self) -> ByteVec {
+    pub fn into_bytes(self) -> Vec<u8> {
         self.into_string().into_bytes()
     }
 
@@ -1020,7 +1022,7 @@ impl NonEmptyString {
 
     /// Splits the string into two at the given non-zero index.
     ///
-    /// The index has to be non-zero to guaratee that the string would remain non-empty.
+    /// The index has to be non-zero to guarantee that the string would remain non-empty.
     ///
     /// # Panics
     ///

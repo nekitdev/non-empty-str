@@ -45,4 +45,7 @@ pub(crate) mod ownership;
 #[cfg(feature = "serde")]
 pub(crate) mod serde;
 
+#[cfg(feature = "valuable")]
+pub(crate) mod valuable;
+
 pub(crate) mod internals;

@@ -4,7 +4,7 @@ use core::{iter::Map, str};
 
 use non_empty_iter::NonEmptyIterator;
 
-use crate::{internals::Byte, str::NonEmptyStr};
+use crate::str::NonEmptyStr;
 
 /// Represents functions mapping non-empty [`prim@str`] to [`NonEmptyStr`].
 ///
@@ -31,7 +31,7 @@ impl<'s> Bytes<'s> {
 }
 
 impl<'s> IntoIterator for Bytes<'s> {
-    type Item = Byte;
+    type Item = u8;
     type IntoIter = str::Bytes<'s>;
 
     fn into_iter(self) -> Self::IntoIter {
